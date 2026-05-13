@@ -3,8 +3,6 @@ pipeline {
     triggers {
         // Check for drift hourly
         cron('H * * * *')
-        // You can uncomment githubPush() if you configure GitHub webhooks in Jenkins
-        // githubPush()
     }
     environment {
         GITHUB_REPO_URL = 'https://github.com/Preet018/Log-Anomaly-Detection.git'
@@ -12,7 +10,7 @@ pipeline {
         IMAGE_TAG = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
 
         ANSIBLE_INVENTORY = "Ansible/hosts.ini"
-        ANSIBLE_PLAYBOOK  = "Ansible/deploy.yml"
+        ANSIBLE_PLAYBOOK  = "Ansible/deploy.yaml"
     }
     stages {
         // ==========================================
@@ -30,12 +28,10 @@ pipeline {
             when { not { triggeredBy 'TimerTrigger' } }
             steps {
                 script {
-                    sh '''
-                        python3 -m venv venv
-                        . venv/bin/activate
-                        pip install flake8
-                        flake8 . --exclude=venv --count --select=E9,F63,F7,F82 --show-source --statistics
-                    '''
+                    sh 'python3 -m venv venv'
+                    sh '. venv/bin/activate'
+                    sh 'pip install flake8'
+                    sh 'flake8 . --exclude=venv --count --select=E9,F63,F7,F82 --show-source --statistics'
                 }
             }
         }
@@ -43,12 +39,10 @@ pipeline {
             when { not { triggeredBy 'TimerTrigger' } }
             steps {
                 script {
-                    sh '''
-                        if [ ! -d "venv" ]; then python3 -m venv venv; fi
-                        . venv/bin/activate
-                        pip install pytest
-                        pytest frontend/ prediction_service/ drift_service/ || true
-                    '''
+                    sh 'if [ ! -d "venv" ]; then python3 -m venv venv; fi'
+                    sh '. venv/bin/activate'
+                    sh 'pip install pytest'
+                    sh 'pytest frontend/ prediction_service/ drift_service/ || true'
                 }
             }
         }
@@ -63,7 +57,7 @@ pipeline {
                     sh "docker build -t ${DOCKER_USERNAME}/ml-pipeline:${IMAGE_TAG} -f ml_pipeline/Dockerfile ./ml_pipeline"
                     sh "docker build -t ${DOCKER_USERNAME}/mongo-service:${IMAGE_TAG} -f data_storage/Dockerfile ./data_storage"
 
-                    // Tag as latest
+                    // Build images with latest tag
                     sh "docker tag ${DOCKER_USERNAME}/frontend:${IMAGE_TAG} ${DOCKER_USERNAME}/frontend:latest"
                     sh "docker tag ${DOCKER_USERNAME}/prediction-service:${IMAGE_TAG} ${DOCKER_USERNAME}/prediction-service:latest"
                     sh "docker tag ${DOCKER_USERNAME}/drift-service:${IMAGE_TAG} ${DOCKER_USERNAME}/drift-service:latest"
@@ -78,11 +72,11 @@ pipeline {
                 script {
                     docker.withRegistry('', 'DockerHubCred') {
                         // Push versioned tags
-                        sh "docker push ${DOCKER_USERNAME}/frontend:${IMAGE_TAG}"
-                        sh "docker push ${DOCKER_USERNAME}/prediction-service:${IMAGE_TAG}"
-                        sh "docker push ${DOCKER_USERNAME}/drift-service:${IMAGE_TAG}"
-                        sh "docker push ${DOCKER_USERNAME}/ml-pipeline:${IMAGE_TAG}"
-                        sh "docker push ${DOCKER_USERNAME}/mongo-service:${IMAGE_TAG}"
+                        // sh "docker push ${DOCKER_USERNAME}/frontend:${IMAGE_TAG}"
+                        // sh "docker push ${DOCKER_USERNAME}/prediction-service:${IMAGE_TAG}"
+                        // sh "docker push ${DOCKER_USERNAME}/drift-service:${IMAGE_TAG}"
+                        // sh "docker push ${DOCKER_USERNAME}/ml-pipeline:${IMAGE_TAG}"
+                        // sh "docker push ${DOCKER_USERNAME}/mongo-service:${IMAGE_TAG}"
 
                         // Push latest tags
                         sh "docker push ${DOCKER_USERNAME}/frontend:latest"
@@ -94,21 +88,6 @@ pipeline {
                 }
             }
         }
-        stage('Load Images into Minikube') {
-            when { not { triggeredBy 'TimerTrigger' } }
-            steps {
-                script {
-                    sh """
-                        minikube image load ${DOCKER_USERNAME}/frontend:latest || true
-                        minikube image load ${DOCKER_USERNAME}/prediction-service:latest || true
-                        minikube image load ${DOCKER_USERNAME}/drift-service:latest || true
-                        minikube image load ${DOCKER_USERNAME}/ml-pipeline:latest || true
-                        minikube image load ${DOCKER_USERNAME}/mongo-service:latest || true
-                    """
-                }
-            }
-        }
-
         // ==========================================
         // STAGE 2: CONTINUOUS DEPLOYMENT (CD)
         // ==========================================
@@ -130,12 +109,11 @@ pipeline {
         // ==========================================
         // STAGE 3: CONTINUOUS TRAINING (CT)
         // ==========================================
-        stage('Check For Drift (CT)') {
+        stage('Check For Drift') {
             when { triggeredBy 'TimerTrigger' }
             steps {
                 script {
                     echo "Waking up to check Drift Service for model drift..."
-                    // We use curl to ask the running Drift Service inside K8s because it has access to the live PVC data.
                     def driftStatus = sh(script: "curl -s http://localhost:30001/drift/status | grep '\"overall_drift\": true' >/dev/null && echo true || echo false", returnStdout: true).trim()
                     
                     if (driftStatus == 'true') {
@@ -148,7 +126,7 @@ pipeline {
                 }
             }
         }
-        stage('Launch Training Job (CT)') {
+        stage('Train Model') {
             when { 
                 allOf {
                     triggeredBy 'TimerTrigger'
@@ -163,7 +141,7 @@ pipeline {
                 }
             }
         }
-        stage('Wait for Model Update (CT)') {
+        stage('Update Model') {
             when { 
                 allOf {
                     triggeredBy 'TimerTrigger'
@@ -177,7 +155,7 @@ pipeline {
                 }
             }
         }
-        stage('Restart Prediction Pods (CT)') {
+        stage('Restart Prediction Pods') {
             when { 
                 allOf {
                     triggeredBy 'TimerTrigger'
@@ -192,7 +170,7 @@ pipeline {
                 }
             }
         }
-        stage('Clean Up Job (CT)') {
+        stage('Clean Up Job') {
             when { 
                 allOf {
                     triggeredBy 'TimerTrigger'
@@ -226,3 +204,8 @@ pipeline {
         }
     }
 }
+
+
+ansible-playbook -i ${ANSIBLE_INVENTORY} ${ANSIBLE_PLAYBOOK} -e frontend_tag=${IMAGE_TAG} -e prediction_tag=${IMAGE_TAG} -e drift_tag=${IMAGE_TAG} -e ml_pipeline_tag=${IMAGE_TAG}
+
+ansible-playbook -i Ansible/inventory.ini Ansible/deploy.yaml -e frontend_tag=latest -e prediction_tag=latest -e drift_tag=latest -e ml_pipeline_tag=latest
