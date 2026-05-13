@@ -99,8 +99,7 @@ pipeline {
                     ansible-playbook -i ${ANSIBLE_INVENTORY} ${ANSIBLE_PLAYBOOK} \
                         -e frontend_tag=${IMAGE_TAG} \
                         -e prediction_tag=${IMAGE_TAG} \
-                        -e drift_tag=${IMAGE_TAG} \
-                        -e ml_pipeline_tag=${IMAGE_TAG}
+                        -e drift_tag=${IMAGE_TAG}
                     """
                 }
             }
@@ -205,7 +204,4 @@ pipeline {
     }
 }
 
-
-ansible-playbook -i ${ANSIBLE_INVENTORY} ${ANSIBLE_PLAYBOOK} -e frontend_tag=${IMAGE_TAG} -e prediction_tag=${IMAGE_TAG} -e drift_tag=${IMAGE_TAG} -e ml_pipeline_tag=${IMAGE_TAG}
-
-ansible-playbook -i Ansible/inventory.ini Ansible/deploy.yaml -e frontend_tag=latest -e prediction_tag=latest -e drift_tag=latest -e ml_pipeline_tag=latest
+// ansible-playbook -i Ansible/inventory.ini Ansible/deploy.yaml -e frontend_tag=latest -e prediction_tag=latest -e drift_tag=latest
