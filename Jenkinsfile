@@ -30,8 +30,12 @@ pipeline {
             when { not { triggeredBy 'TimerTrigger' } }
             steps {
                 script {
-                    sh 'pip install flake8'
-                    sh 'flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics'
+                    sh '''
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install flake8
+                        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+                    '''
                 }
             }
         }
@@ -39,8 +43,12 @@ pipeline {
             when { not { triggeredBy 'TimerTrigger' } }
             steps {
                 script {
-                    sh 'pip install pytest'
-                    sh 'pytest frontend/ prediction_service/ drift_service/ || true'
+                    sh '''
+                        if [ ! -d "venv" ]; then python3 -m venv venv; fi
+                        . venv/bin/activate
+                        pip install pytest
+                        pytest frontend/ prediction_service/ drift_service/ || true
+                    '''
                 }
             }
         }
