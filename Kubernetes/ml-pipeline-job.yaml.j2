@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ml-training-job-{{ ml_pipeline_tag | default('latest') }}
+  namespace: log-anomaly
+spec:
+  template:
+    spec:
+      containers:
+      - name: ml-pipeline
+        image: preet1018/ml-pipeline:{{ ml_pipeline_tag | default('latest') }}
+        env:
+        - name: MONGO_URI
+          value: "mongodb://admin:admin@mongodb:27017/logs_db?authSource=admin"
+        volumeMounts:
+        - name: models-storage
+          mountPath: /app/models
+      restartPolicy: Never
+      volumes:
+      - name: models-storage
+        persistentVolumeClaim:
+          claimName: models-pvc
+  backoffLimit: 1

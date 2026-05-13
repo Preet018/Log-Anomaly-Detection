@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  namespace: log-anomaly
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: preet1018/frontend:{{ frontend_tag | default('latest') }}
+        ports:
+        - containerPort: 8501
+        env:
+        - name: API_URL
+          value: "http://prediction-service:8000"
+        - name: MONGO_URI
+          value: "mongodb://admin:admin@mongodb:27017/logs_db?authSource=admin"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: log-anomaly
+spec:
+  type: NodePort # Use NodePort or LoadBalancer for external access
+  selector:
+    app: frontend
+  ports:
+    - protocol: TCP
+      port: 8501
+      targetPort: 8501
+      nodePort: 30501 # Optional: fix port for easier access

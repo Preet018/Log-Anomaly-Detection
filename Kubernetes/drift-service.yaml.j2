@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drift-deployment
+  namespace: log-anomaly
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drift-service
+  template:
+    metadata:
+      labels:
+        app: drift-service
+    spec:
+      containers:
+      - name: drift-service
+        image: preet1018/drift-service:{{ drift_tag | default('latest') }}
+        ports:
+        - containerPort: 8001
+        env:
+        - name: PROJECT_ROOT
+          value: "/app"
+        - name: PREDICTION_SERVICE_URL
+          value: "http://prediction-service:8000"
+        - name: MONGO_URI
+          value: "mongodb://admin:admin@mongodb:27017/logs_db?authSource=admin"
+        volumeMounts:
+        - name: models-storage
+          mountPath: /app/models
+      volumes:
+      - name: models-storage
+        persistentVolumeClaim:
+          claimName: models-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: drift-service
+  namespace: log-anomaly
+spec:
+  selector:
+    app: drift-service
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 8001
+      targetPort: 8001
+      nodePort: 30001
