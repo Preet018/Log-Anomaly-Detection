@@ -9,7 +9,7 @@ pipeline {
         DOCKER_USERNAME = 'preet1018'
         IMAGE_TAG = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
 
-        ANSIBLE_INVENTORY = "Ansible/hosts.ini"
+        ANSIBLE_INVENTORY = "Ansible/inventory.ini"
         ANSIBLE_PLAYBOOK  = "Ansible/deploy.yaml"
     }
     stages {
