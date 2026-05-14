@@ -10,7 +10,13 @@
     frontend_tag: "latest"
 
   tasks:
-
+    - name: Debug Kubernetes Connection
+      shell: |
+        whoami
+        kubectl config current-context
+        kubectl cluster-info
+        kubectl get nodes
+    
     # 1. Apply base infrastructure that doesn't need templating
     - name: "Ensure Namespace, Volumes, and MongoDB exist"
       command: kubectl apply -f ../Kubernetes/{{ item }} --validate=false
