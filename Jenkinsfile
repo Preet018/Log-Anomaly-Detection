@@ -150,10 +150,7 @@ pipeline {
         }
         stage('Train Model') {
             when { 
-                allOf {
-                    triggeredBy 'TimerTrigger'
-                    expression { return env.DRIFT_DETECTED == 'true' }
-                }
+                expression { return env.DRIFT_DETECTED == 'true' }
             }
             steps {
                 script {
@@ -166,10 +163,7 @@ pipeline {
         }
         stage('Update Model') {
             when { 
-                allOf {
-                    triggeredBy 'TimerTrigger'
-                    expression { return env.DRIFT_DETECTED == 'true' }
-                }
+                expression { return env.DRIFT_DETECTED == 'true' }
             }
             steps {
                 script {
@@ -180,10 +174,7 @@ pipeline {
         }
         stage('Restart Prediction Pods') {
             when { 
-                allOf {
-                    triggeredBy 'TimerTrigger'
-                    expression { return env.DRIFT_DETECTED == 'true' }
-                }
+                expression { return env.DRIFT_DETECTED == 'true' }
             }
             steps {
                 script {
@@ -195,10 +186,7 @@ pipeline {
         }
         stage('Clean Up Job') {
             when { 
-                allOf {
-                    triggeredBy 'TimerTrigger'
-                    expression { return env.DRIFT_DETECTED == 'true' }
-                }
+                expression { return env.DRIFT_DETECTED == 'true' }
             }
             steps {
                 script {
