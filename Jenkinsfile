@@ -109,48 +109,28 @@ pipeline {
 
         // STAGE 3: CONTINUOUS TRAINING (CT)
         stage('Check For Drift') {
+            // when { triggeredBy 'TimerTrigger' }
             steps {
                 script {
-                    def driftUrl = "http://netsentinel.local/drift/status"
-                    echo "Checking for model drift at ${driftUrl}..."
+                    echo "Waking up to check Drift Service for model drift..."
+                    def driftStatus = sh(script: "curl -s http://netsentinel.local/drift/status | grep -E '\"overall_drift\":\\s*true' >/dev/null && echo true || echo false", returnStdout: true).trim()
                     
-                    def response = sh(
-                        script: """
-                            curl --fail --silent --show-error \
-                                 --max-time 10 \
-                                 ${driftUrl}
-                        """,
-                        returnStdout: true
-                    ).trim()
-
-                    if (!response) {
-                        error("Empty response from Drift Service at ${driftUrl}")
-                    }
-
-                    echo "Response from Drift Service: ${response}"
-
-                    // Use readJSON (requires Pipeline Utility Steps plugin)
-                    def json = readJSON text: response
-
-                    // Validate key existence
-                    if (json.overall_drift == null) {
-                        error("Invalid drift response: overall_drift missing in JSON")
-                    }
-
-                    // Store as string for environment variable
-                    env.DRIFT_DETECTED = json.overall_drift ? "true" : "false"
-
-                    if (json.overall_drift) {
-                        echo "DRIFT DETECTED: Retraining required."
+                    if (driftStatus == 'true') {
+                        env.DRIFT_DETECTED = 'true'
+                        echo "Drift detected! Proceeding to retrain..."
                     } else {
-                        echo "NO DRIFT: Model stable."
+                        env.DRIFT_DETECTED = 'false'
+                        echo "No drift detected. Skipping retraining."
                     }
                 }
             }
         }
         stage('Train Model') {
             when { 
-                expression { return env.DRIFT_DETECTED == 'true' }
+                allOf {
+                    triggeredBy 'TimerTrigger'
+                    expression { return env.DRIFT_DETECTED == 'true' }
+                }
             }
             steps {
                 script {
@@ -163,7 +143,10 @@ pipeline {
         }
         stage('Update Model') {
             when { 
-                expression { return env.DRIFT_DETECTED == 'true' }
+                allOf {
+                    triggeredBy 'TimerTrigger'
+                    expression { return env.DRIFT_DETECTED == 'true' }
+                }
             }
             steps {
                 script {
@@ -174,7 +157,10 @@ pipeline {
         }
         stage('Restart Prediction Pods') {
             when { 
-                expression { return env.DRIFT_DETECTED == 'true' }
+                allOf {
+                    triggeredBy 'TimerTrigger'
+                    expression { return env.DRIFT_DETECTED == 'true' }
+                }
             }
             steps {
                 script {
@@ -186,7 +172,10 @@ pipeline {
         }
         stage('Clean Up Job') {
             when { 
-                expression { return env.DRIFT_DETECTED == 'true' }
+                allOf {
+                    triggeredBy 'TimerTrigger'
+                    expression { return env.DRIFT_DETECTED == 'true' }
+                }
             }
             steps {
                 script {
