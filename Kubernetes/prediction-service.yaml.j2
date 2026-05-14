@@ -64,28 +64,6 @@ spec:
 
     spec:
 
-      {# initContainers:
-      - name: wait-for-model
-
-        image: busybox:1.36
-
-        command:
-          - sh
-          - -c
-          - |
-            echo "Checking for trained model..."
-
-            until [ -f /models/model_v1.pkl ]; do
-              echo "Model not found yet. Waiting..."
-              sleep 5
-            done
-
-            echo "Model found. Starting prediction service."
-
-        volumeMounts:
-        - name: models-storage
-          mountPath: /models #}
-
       containers:
       - name: prediction-service
 
