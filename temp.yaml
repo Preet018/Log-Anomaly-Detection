@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: prediction-service
-        image: preet1018/prediction-service:{{ prediction_tag | default('latest') }}
+        image: preet1018/prediction-service:latest
         ports:
         - containerPort: 8000
         env:
@@ -66,17 +66,17 @@ spec:
 
       initContainers:
       - name: seed-models
-        image: preet1018/prediction-service:{{ prediction_tag | default('latest') }}
+        image: preet1018/prediction-service:latest
         imagePullPolicy: Always
         command: ['sh', '-c', 'cp -n /app/models/* /target-models/ || true']
         volumeMounts:
-          - name: models-storage
-            mountPath: /target-models
+        - name: models-storage
+          mountPath: /target-models
 
       containers:
       - name: prediction-service
 
-        image: preet1018/prediction-service:{{ prediction_tag | default('latest') }}
+        image: preet1018/prediction-service:latest
 
         imagePullPolicy: Always
 
@@ -91,8 +91,8 @@ spec:
           value: "mongodb://admin:admin@mongodb:27017/logs_db?authSource=admin"
 
         volumeMounts:
-          - name: models-storage
-            mountPath: /app/models
+        - name: models-storage
+          mountPath: /app/models
 
         readinessProbe:
           httpGet:
