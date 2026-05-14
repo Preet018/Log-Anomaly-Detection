@@ -28,33 +28,27 @@
     - name: "Update Kubernetes manifests with latest Prediction tag"
       template:
         src: "../Kubernetes/prediction-service.yaml.j2"
-        # dest: "/var/lib/jenkins/k8s-manifests/prediction-service.yaml"
-        dest: "/tmp/prediction-service.yaml"
+        dest: "/var/lib/jenkins/k8s-manifests/prediction-service.yaml"
 
     - name: "Update Kubernetes manifests with latest Drift tag"
       template:
         src: "../Kubernetes/drift-service.yaml.j2"
-        # dest: "/var/lib/jenkins/k8s-manifests/drift-service.yaml"
-        dest: "/tmp/drift-service.yaml"
+        dest: "/var/lib/jenkins/k8s-manifests/drift-service.yaml"
 
     - name: "Update Kubernetes manifests with latest Frontend tag"
       template:
         src: "../Kubernetes/frontend.yaml.j2"
-        # dest: "/var/lib/jenkins/k8s-manifests/frontend-deployment.yaml"
-        dest: "/tmp/frontend-deployment.yaml"
+        dest: "/var/lib/jenkins/k8s-manifests/frontend-deployment.yaml"
 
     # 4. Apply the templated manifests
     - name: "Apply Prediction Deployment"
-      # command: kubectl apply -f /var/lib/jenkins/k8s-manifests/prediction-service.yaml --validate=false
-      command: kubectl apply -f /tmp/prediction-service.yaml --validate=false
+      command: kubectl apply -f /var/lib/jenkins/k8s-manifests/prediction-service.yaml --validate=false
 
     - name: "Apply Drift Deployment"
-      # command: kubectl apply -f /var/lib/jenkins/k8s-manifests/drift-service.yaml --validate=false
-      command: kubectl apply -f /tmp/drift-service.yaml --validate=false
+      command: kubectl apply -f /var/lib/jenkins/k8s-manifests/drift-service.yaml --validate=false
 
     - name: "Apply Frontend Deployment"
-      # command: kubectl apply -f /var/lib/jenkins/k8s-manifests/frontend-deployment.yaml --validate=false
-      command: kubectl apply -f /tmp/frontend-deployment.yaml --validate=false
+      command: kubectl apply -f /var/lib/jenkins/k8s-manifests/frontend-deployment.yaml --validate=false
 
     # 5. Verify the zero-downtime rolling update succeeds
     - name: "Verify Rollout Status (Prediction Service)"
