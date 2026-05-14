@@ -95,6 +95,16 @@ pipeline {
         // ==========================================
         // STAGE 2: CONTINUOUS DEPLOYMENT (CD)
         // ==========================================
+        stage('Kubernetes Health Check') {
+            steps {
+                sh '''
+                    kubectl config current-context
+                    kubectl cluster-info
+                    kubectl get nodes
+                    kubectl get pods -A
+                '''
+            }
+        }
         stage('Deploy with Ansible') {
             when { not { triggeredBy 'TimerTrigger' } }
             steps {
