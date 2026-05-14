@@ -15,33 +15,16 @@
         state: directory
         mode: '0755'
 
-    - name: "Get project root path"
-      set_fact:
-        project_root: "{{ playbook_dir | dirname }}"
-
-    - name: "Ensure local data directories exist"
-      file:
-        path: "{{ project_root }}/{{ item }}"
-        state: directory
-        mode: '0777'
-      loop:
-        - data_storage
-        - models
-        - mongodb_data
-
-    - name: "Ensure Namespace, MongoDB, and Ingress exist"
+    # 2. Apply base infrastructure that doesn't need templating
+    - name: "Ensure Namespace, Volumes, MongoDB, and Ingress exist"
       command: kubectl apply -f ../Kubernetes/{{ item }} --validate=false
       loop:
         - namespace.yaml
+        - volumes.yaml
         - mongodb.yaml
         - ingress.yaml
 
     # 3. Template the dynamic K8s manifests using the tags provided by Jenkins
-    - name: "Update Kubernetes manifests with latest Volumes config"
-      template:
-        src: "../Kubernetes/volumes.yaml.j2"
-        dest: "/var/lib/jenkins/k8s-manifests/volumes.yaml"
-
     - name: "Update Kubernetes manifests with latest Prediction tag"
       template:
         src: "../Kubernetes/prediction-service.yaml.j2"
@@ -58,9 +41,6 @@
         dest: "/var/lib/jenkins/k8s-manifests/frontend-deployment.yaml"
 
     # 4. Apply the templated manifests
-    - name: "Apply Persistent Volumes"
-      command: kubectl apply -f /var/lib/jenkins/k8s-manifests/volumes.yaml --validate=false
-
     - name: "Apply Prediction Deployment"
       command: kubectl apply -f /var/lib/jenkins/k8s-manifests/prediction-service.yaml --validate=false
 
