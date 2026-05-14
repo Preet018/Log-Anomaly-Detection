@@ -96,6 +96,7 @@ pipeline {
         // STAGE 2: CONTINUOUS DEPLOYMENT (CD)
         // ==========================================
         stage('Kubernetes Health Check') {
+            when { not { triggeredBy 'TimerTrigger' } }
             steps {
                 sh '''
                     kubectl config current-context
@@ -149,8 +150,9 @@ pipeline {
             steps {
                 script {
                     echo "Launching ML Training Job..."
-                    sh "sed 's/{{ ml_pipeline_tag | default(.latest.) }}/latest/g' Kubernetes/ml-pipeline-job.yaml.j2 > /tmp/ml-pipeline-job.yaml"
-                    sh "kubectl apply -f /tmp/ml-pipeline-job.yaml"
+                    sh "mkdir -p /var/lib/jenkins/k8s-manifests"
+                    sh "sed 's/{{ ml_pipeline_tag | default(.latest.) }}/latest/g' Kubernetes/ml-pipeline-job.yaml.j2 > /var/lib/jenkins/k8s-manifests/ml-pipeline-job.yaml"
+                    sh "kubectl apply -f /var/lib/jenkins/k8s-manifests/ml-pipeline-job.yaml"
                 }
             }
         }
