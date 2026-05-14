@@ -2,21 +2,12 @@
 - hosts: master
   become: no
 
-  # These variables are expected to be passed from Jenkins via -e flags (e.g., -e frontend_tag=a1b2c3d)
-  # We set defaults here to 'latest' just in case they aren't provided.
   vars:
     prediction_tag: "latest"
     drift_tag: "latest"
     frontend_tag: "latest"
 
   tasks:
-    - name: Debug Kubernetes Connection
-      shell: |
-        whoami
-        kubectl config current-context
-        kubectl cluster-info
-        kubectl get nodes
-    
     # 1. Ensure the output directory for templated manifests exists
     - name: "Ensure manifest output directory exists"
       file:
@@ -25,12 +16,13 @@
         mode: '0755'
 
     # 2. Apply base infrastructure that doesn't need templating
-    - name: "Ensure Namespace, Volumes, and MongoDB exist"
+    - name: "Ensure Namespace, Volumes, MongoDB, and Ingress exist"
       command: kubectl apply -f ../Kubernetes/{{ item }} --validate=false
       loop:
         - namespace.yaml
         - volumes.yaml
         - mongodb.yaml
+        - ingress.yaml
 
     # 3. Template the dynamic K8s manifests using the tags provided by Jenkins
     - name: "Update Kubernetes manifests with latest Prediction tag"
@@ -71,3 +63,5 @@
     - name: "Deployment Completed"
       debug:
         msg: "Kubernetes deployment updated successfully for all services!"
+
+# ansible-playbook -i Ansible/inventory.ini Ansible/deploy.yaml -e frontend_tag=latest -e prediction_tag=latest -e drift_tag=latest

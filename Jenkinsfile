@@ -13,9 +13,7 @@ pipeline {
         ANSIBLE_PLAYBOOK  = "Ansible/deploy.yaml"
     }
     stages {
-        // ==========================================
         // STAGE 1: CONTINUOUS INTEGRATION (CI)
-        // ==========================================
         stage('Checkout') {
             when { not { triggeredBy 'TimerTrigger' } }
             steps {
@@ -92,9 +90,8 @@ pipeline {
                 }
             }
         }
-        // ==========================================
+
         // STAGE 2: CONTINUOUS DEPLOYMENT (CD)
-        // ==========================================
         stage('Deploy with Ansible') {
             when { not { triggeredBy 'TimerTrigger' } }
             steps {
@@ -109,9 +106,7 @@ pipeline {
             }
         }
 
-        // ==========================================
         // STAGE 3: CONTINUOUS TRAINING (CT)
-        // ==========================================
         stage('Check For Drift') {
             when { triggeredBy 'TimerTrigger' }
             steps {
@@ -208,5 +203,3 @@ pipeline {
         }
     }
 }
-
-// ansible-playbook -i Ansible/inventory.ini Ansible/deploy.yaml -e frontend_tag=latest -e prediction_tag=latest -e drift_tag=latest

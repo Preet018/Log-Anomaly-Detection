@@ -30,11 +30,9 @@ metadata:
   name: frontend-service
   namespace: log-anomaly
 spec:
-  type: NodePort # Use NodePort or LoadBalancer for external access
   selector:
     app: frontend
   ports:
     - protocol: TCP
       port: 8501
       targetPort: 8501
-      nodePort: 30501 # Optional: fix port for easier access
