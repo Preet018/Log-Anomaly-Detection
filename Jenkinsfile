@@ -109,7 +109,7 @@ pipeline {
 
         // STAGE 3: CONTINUOUS TRAINING (CT)
         stage('Check For Drift') {
-            when { triggeredBy 'TimerTrigger' }
+            // when { triggeredBy 'TimerTrigger' }
             steps {
                 script {
                     echo "Waking up to check Drift Service for model drift..."
