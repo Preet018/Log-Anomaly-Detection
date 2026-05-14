@@ -1,4 +1,4 @@
-<p align="center">
+<p align="left">
   <img src="https://img.shields.io/badge/Python-3.11-blue?style=flat-square&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/Build-Docker-blue?style=flat-square&logo=docker&logoColor=white" alt="Docker">
   <img src="https://img.shields.io/badge/CI-Jenkins-orange?style=flat-square&logo=jenkins&logoColor=white" alt="Jenkins">
