@@ -12,7 +12,6 @@ pipeline {
 
         ANSIBLE_INVENTORY = "Ansible/inventory.ini"
         ANSIBLE_PLAYBOOK  = "Ansible/deploy.yaml"
-        DRIFT_SERVICE_URL = "http://localhost:30001/drift/status"
     }
     stages {
         // STAGE 1: CONTINUOUS INTEGRATION (CI)
@@ -110,22 +109,25 @@ pipeline {
 
         // STAGE 3: CONTINUOUS TRAINING (CT)
         stage('Check For Drift') {
+            // when { triggeredBy 'TimerTrigger' }
             steps {
                 script {
-                    echo "Checking for model drift at ${env.DRIFT_SERVICE_URL}..."
-                    def response = sh(script: "curl -s ${env.DRIFT_SERVICE_URL}", returnStdout: true).trim()
+                    echo "Waking up to check Drift Service for model drift..."
+                    def response = sh(script: "curl -s http://localhost:30001/drift/status", returnStdout: true).trim()
+                    echo "Response from Drift Service: ${response}"
                     
-                    if (!response) {
-                        error "Drift Service returned an empty response. Check if the service is running at ${env.DRIFT_SERVICE_URL}"
-                    }
-
-                    def json = readJSON text: response
-                    env.DRIFT_DETECTED = json.overall_drift.toString()
-
-                    if (env.DRIFT_DETECTED == 'true') {
-                        echo "DRIFT DETECTED: Feature patterns have changed. Retraining required."
-                    } else {
-                        echo "NO DRIFT: Model remains accurate for current traffic."
+                    try {
+                        def json = new groovy.json.JsonSlurper().parseText(response)
+                        if (json.overall_drift == true) {
+                            env.DRIFT_DETECTED = 'true'
+                            echo "Drift detected! Proceeding to retrain..."
+                        } else {
+                            env.DRIFT_DETECTED = 'false'
+                            echo "No drift detected. Skipping retraining."
+                        }
+                    } catch (Exception e) {
+                        echo "Failed to parse JSON response: ${e.message}"
+                        env.DRIFT_DETECTED = 'false'
                     }
                 }
             }
