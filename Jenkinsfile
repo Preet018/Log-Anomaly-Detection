@@ -75,12 +75,12 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('', 'DockerHubCred') {
-                        // Push versioned tags
-                        // sh "docker push ${DOCKER_USERNAME}/frontend:${IMAGE_TAG}"
-                        // sh "docker push ${DOCKER_USERNAME}/prediction-service:${IMAGE_TAG}"
-                        // sh "docker push ${DOCKER_USERNAME}/drift-service:${IMAGE_TAG}"
-                        // sh "docker push ${DOCKER_USERNAME}/ml-pipeline:${IMAGE_TAG}"
-                        // sh "docker push ${DOCKER_USERNAME}/mongo-service:${IMAGE_TAG}"
+                        // Push versioned tags (required so Kubernetes can pull the SHA-tagged image during rollout)
+                        sh "docker push ${DOCKER_USERNAME}/frontend:${IMAGE_TAG}"
+                        sh "docker push ${DOCKER_USERNAME}/prediction-service:${IMAGE_TAG}"
+                        sh "docker push ${DOCKER_USERNAME}/drift-service:${IMAGE_TAG}"
+                        sh "docker push ${DOCKER_USERNAME}/ml-pipeline:${IMAGE_TAG}"
+                        sh "docker push ${DOCKER_USERNAME}/mongo-service:${IMAGE_TAG}"
 
                         // Push latest tags
                         sh "docker push ${DOCKER_USERNAME}/frontend:latest"
