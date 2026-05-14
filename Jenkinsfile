@@ -2,7 +2,8 @@ pipeline {
     agent any
     triggers {
         // Check for drift hourly
-        cron('H * * * *')
+        // cron('H * * * *')
+        cron('*/5 * * * *')
     }
     environment {
         GITHUB_REPO_URL = 'https://github.com/Preet018/Log-Anomaly-Detection.git'
@@ -184,22 +185,22 @@ pipeline {
             }
         }
     }
-    post {
-        success {
-            echo 'Pipeline successfully completed!'
-            emailext(
-                to: 'chandrakarpreet.1100@gmail.com',
-                subject: 'Build Success: Log Anomaly Detection',
-                body: """The Jenkins pipeline for the Log Anomaly Detection project has completed successfully.\n\nJob: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nBuild URL: ${env.BUILD_URL}"""
-            )
-        }
-        failure {
-            echo 'Pipeline failed!'
-            emailext(
-                to: 'chandrakarpreet.1100@gmail.com',
-                subject: 'Build Failure: Log Anomaly Detection',
-                body: """The Jenkins pipeline for the Log Anomaly Detection project has failed.\n\nJob: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nBuild URL: ${env.BUILD_URL}"""
-            )
-        }
-    }
+    // post {
+    //     success {
+    //         echo 'Pipeline successfully completed!'
+    //         emailext(
+    //             to: 'chandrakarpreet.1100@gmail.com',
+    //             subject: 'Build Success: Log Anomaly Detection',
+    //             body: """The Jenkins pipeline for the Log Anomaly Detection project has completed successfully.\n\nJob: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nBuild URL: ${env.BUILD_URL}"""
+    //         )
+    //     }
+    //     failure {
+    //         echo 'Pipeline failed!'
+    //         emailext(
+    //             to: 'chandrakarpreet.1100@gmail.com',
+    //             subject: 'Build Failure: Log Anomaly Detection',
+    //             body: """The Jenkins pipeline for the Log Anomaly Detection project has failed.\n\nJob: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nBuild URL: ${env.BUILD_URL}"""
+    //         )
+    //     }
+    // }
 }
