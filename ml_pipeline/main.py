@@ -6,7 +6,8 @@ from preprocess import preprocess_data
 from train import train_model
 from evaluate import evaluate_model
 
-MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models")
+PROJECT_ROOT = os.environ.get("PROJECT_ROOT", os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+MODEL_DIR = os.path.join(PROJECT_ROOT, "models")
 
 def main():
     os.makedirs(MODEL_DIR, exist_ok=True)
@@ -28,7 +29,7 @@ def main():
     joblib.dump(preprocessor, preprocessor_path)
 
     # Save baseline stats for drift detection service
-    data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data_storage")
+    data_dir = os.path.join(PROJECT_ROOT, "data_storage")
     os.makedirs(data_dir, exist_ok=True)
     numeric_cols = df_train.select_dtypes(include="number").columns.tolist()
     # Exclude metadata columns

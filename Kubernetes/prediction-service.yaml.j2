@@ -72,6 +72,8 @@ spec:
         volumeMounts:
           - name: models-storage
             mountPath: /target-models
+          - name: data-storage
+            mountPath: /data_storage
 
       containers:
       - name: prediction-service
@@ -84,15 +86,14 @@ spec:
         - containerPort: 8000
 
         env:
-        - name: PROJECT_ROOT
-          value: "/app"
-
         - name: MONGO_URI
           value: "mongodb://admin:admin@mongodb:27017/logs_db?authSource=admin"
 
         volumeMounts:
           - name: models-storage
             mountPath: /app/models
+          - name: data-storage
+            mountPath: /data_storage
 
         readinessProbe:
           httpGet:
@@ -118,6 +119,9 @@ spec:
       - name: models-storage
         persistentVolumeClaim:
           claimName: models-pvc
+      - name: data-storage
+        persistentVolumeClaim:
+          claimName: data-pvc
 
 ---
 apiVersion: v1
