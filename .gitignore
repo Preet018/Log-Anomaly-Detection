@@ -15,3 +15,7 @@ env/
 .vscode/
 .idea/
 data_storage/logs.csv
+
+# Project Docs
+running_guide.md
+docs/
