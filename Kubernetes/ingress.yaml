@@ -3,6 +3,9 @@ kind: Ingress
 metadata:
   name: netsentinel-ingress
   namespace: log-anomaly
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/client-body-buffer-size: "50m"
 spec:
   rules:
   - host: netsentinel.local
