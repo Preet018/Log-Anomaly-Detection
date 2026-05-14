@@ -15,8 +15,7 @@ import requests
 from sklearn.model_selection import train_test_split
 
 TRAIN_URL = "https://raw.githubusercontent.com/defcom17/NSL_KDD/master/KDDTrain+.txt"
-PROJECT_ROOT = os.environ.get("PROJECT_ROOT", os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-DATA_DIR = os.path.join(PROJECT_ROOT, "data_storage")
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data_storage")
 
 INITIAL_PATH = os.path.join(DATA_DIR, "KDDTrain_initial.txt")
 RESERVE_PATH = os.path.join(DATA_DIR, "KDDRetrain_reserve.txt")

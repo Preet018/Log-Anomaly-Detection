@@ -19,6 +19,8 @@ spec:
         ports:
         - containerPort: 8001
         env:
+        - name: PROJECT_ROOT
+          value: "/app"
         - name: PREDICTION_SERVICE_URL
           value: "http://prediction-service:8000"
         - name: MONGO_URI
@@ -27,7 +29,7 @@ spec:
         - name: models-storage
           mountPath: /app/models
         - name: data-storage
-          mountPath: /data_storage
+          mountPath: /app/data_storage
       volumes:
       - name: models-storage
         persistentVolumeClaim:
