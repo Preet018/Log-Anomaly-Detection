@@ -160,7 +160,7 @@ pipeline {
             steps {
                 script {
                     echo "Cleaning up the completed training job..."
-                    sh "kubectl delete job/ml-training-job-latest -n log-anomaly"
+                    sh "kubectl delete job/ml-training-job-latest -n log-anomaly --ignore-not-found=true"
                 }
             }
         }
