@@ -15,14 +15,6 @@ pipeline {
     }
     stages {
         // STAGE 1: CONTINUOUS INTEGRATION (CI)
-        stage('Checkout') {
-            when { not { triggeredBy 'TimerTrigger' } }
-            steps {
-                script {
-                    git branch: 'main', url: "${GITHUB_REPO_URL}"
-                }
-            }
-        }
         stage('Linting') {
             when { not { triggeredBy 'TimerTrigger' } }
             steps {
@@ -127,10 +119,7 @@ pipeline {
         }
         stage('Train Model') {
             when { 
-                allOf {
-                    triggeredBy 'TimerTrigger'
-                    expression { return env.DRIFT_DETECTED == 'true' }
-                }
+                expression { return env.DRIFT_DETECTED == 'true' }
             }
             steps {
                 script {
@@ -143,10 +132,7 @@ pipeline {
         }
         stage('Update Model') {
             when { 
-                allOf {
-                    triggeredBy 'TimerTrigger'
-                    expression { return env.DRIFT_DETECTED == 'true' }
-                }
+                expression { return env.DRIFT_DETECTED == 'true' }
             }
             steps {
                 script {
@@ -157,10 +143,7 @@ pipeline {
         }
         stage('Restart Prediction Pods') {
             when { 
-                allOf {
-                    triggeredBy 'TimerTrigger'
-                    expression { return env.DRIFT_DETECTED == 'true' }
-                }
+                expression { return env.DRIFT_DETECTED == 'true' }
             }
             steps {
                 script {
@@ -172,10 +155,7 @@ pipeline {
         }
         stage('Clean Up Job') {
             when { 
-                allOf {
-                    triggeredBy 'TimerTrigger'
-                    expression { return env.DRIFT_DETECTED == 'true' }
-                }
+                expression { return env.DRIFT_DETECTED == 'true' }
             }
             steps {
                 script {
@@ -185,22 +165,22 @@ pipeline {
             }
         }
     }
-    // post {
-    //     success {
-    //         echo 'Pipeline successfully completed!'
-    //         emailext(
-    //             to: 'chandrakarpreet.1100@gmail.com',
-    //             subject: 'Build Success: Log Anomaly Detection',
-    //             body: """The Jenkins pipeline for the Log Anomaly Detection project has completed successfully.\n\nJob: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nBuild URL: ${env.BUILD_URL}"""
-    //         )
-    //     }
-    //     failure {
-    //         echo 'Pipeline failed!'
-    //         emailext(
-    //             to: 'chandrakarpreet.1100@gmail.com',
-    //             subject: 'Build Failure: Log Anomaly Detection',
-    //             body: """The Jenkins pipeline for the Log Anomaly Detection project has failed.\n\nJob: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nBuild URL: ${env.BUILD_URL}"""
-    //         )
-    //     }
-    // }
+    post {
+        success {
+            echo 'Pipeline successfully completed!'
+            emailext(
+                to: 'chandrakarpreet.1100@gmail.com',
+                subject: 'Build Success: Log Anomaly Detection',
+                body: """The Jenkins pipeline for the Log Anomaly Detection project has completed successfully.\n\nJob: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nBuild URL: ${env.BUILD_URL}"""
+            )
+        }
+        failure {
+            echo 'Pipeline failed!'
+            emailext(
+                to: 'chandrakarpreet.1100@gmail.com',
+                subject: 'Build Failure: Log Anomaly Detection',
+                body: """The Jenkins pipeline for the Log Anomaly Detection project has failed.\n\nJob: ${env.JOB_NAME}\nBuild Number: ${env.BUILD_NUMBER}\nBuild URL: ${env.BUILD_URL}"""
+            )
+        }
+    }
 }
