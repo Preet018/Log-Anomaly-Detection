@@ -9,7 +9,9 @@
 
 ---
 
-# NetSentinel: AI-Powered Log Anomaly Detection & MLOps Pipeline
+# Cyber Security Log Anomaly Detection & MLOps Pipeline
+
+## Project Overview
 
 This project is developed as part of the **SPE Project** and demonstrates a complete, production-grade **MLOps (Machine Learning Operations)** and **DevOps CI/CD pipeline** for a CyberSecurity Log Anomaly Detection system.
 
@@ -66,18 +68,17 @@ The automated pipeline performs the following critical stages:
 ## Project Structure
 
 ```bash
-├── Ansible/            # Deployment playbooks and templates
-├── Jenkinsfile         # CI/CD pipeline definition
-├── Kubernetes/         # K8s manifests (Deployments, Services, Volumes)
-├── ml_pipeline/        # Data loading, training, and evaluate scripts
-├── prediction_service/ # FastAPI prediction microservice
-├── drift_service/      # Drift detection and auto-retrain logic
-├── frontend/           # Streamlit dashboard
-└── data_storage/       # Shared Persistent Volume mount point
+├── Ansible/                # IaC: Deployment playbooks and inventory
+├── Kubernetes/             # Orchestration: K8s manifests (Deployments, Services, Ingress)
+│   └── logging/            # Centralized Logging: ELK Stack configurations (Elasticsearch, Fluent Bit, Kibana)
+├── ml_pipeline/            # ML Engineering: Data loading, training, and retraining logic
+├── prediction_service/     # Core Service: FastAPI inference microservice
+├── drift_service/          # Monitoring: Drift detection and retraining trigger
+├── frontend/               # UI: Cyber-themed Streamlit dashboard
+├── data_storage/           # Shared Volume: Persistent storage for logs and baseline stats
+├── models/                 # Artifacts: Pre-trained models and preprocessors
+├── Jenkinsfile             # CI/CD: Automated build and deployment pipeline
+├── docker-compose.yml      # Local Dev: Container orchestration for local testing
+└── requirements.txt        # Dependencies: Global project requirements
 ```
 
----
-
-## Developer
-**Preet**
-*IIIT Bangalore — SPE Mini Project*
