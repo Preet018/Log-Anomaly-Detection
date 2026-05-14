@@ -109,25 +109,26 @@ pipeline {
 
         // STAGE 3: CONTINUOUS TRAINING (CT)
         stage('Check For Drift') {
-            // when { triggeredBy 'TimerTrigger' }
             steps {
                 script {
-                    echo "Waking up to check Drift Service for model drift..."
-                    def response = sh(script: "curl -s http://localhost:30001/drift/status", returnStdout: true).trim()
-                    echo "Response from Drift Service: ${response}"
+                    def driftUrl = "http://netsentinel.local/drift/status"
+                    echo "Checking for model drift at ${driftUrl}..."
                     
-                    try {
-                        def json = new groovy.json.JsonSlurper().parseText(response)
-                        if (json.overall_drift == true) {
-                            env.DRIFT_DETECTED = 'true'
-                            echo "Drift detected! Proceeding to retrain..."
-                        } else {
-                            env.DRIFT_DETECTED = 'false'
-                            echo "No drift detected. Skipping retraining."
-                        }
-                    } catch (Exception e) {
-                        echo "Failed to parse JSON response: ${e.message}"
-                        env.DRIFT_DETECTED = 'false'
+                    // Use -m 10 to timeout after 10 seconds if no response
+                    def response = sh(script: "curl -s -m 10 ${driftUrl}", returnStdout: true).trim()
+                    
+                    if (!response) {
+                        error "Drift Service at ${driftUrl} is unreachable. Please ensure Minikube is running."
+                    }
+
+                    echo "Response from Drift Service: ${response}"
+                    def json = readJSON text: response
+                    env.DRIFT_DETECTED = json.overall_drift.toString()
+
+                    if (env.DRIFT_DETECTED == 'true') {
+                        echo "DRIFT DETECTED: Feature patterns have changed. Retraining required."
+                    } else {
+                        echo "NO DRIFT: Model remains accurate for current traffic."
                     }
                 }
             }
