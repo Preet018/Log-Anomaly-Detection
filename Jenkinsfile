@@ -112,7 +112,7 @@ pipeline {
             steps {
                 script {
                     echo "Waking up to check Drift Service for model drift..."
-                    def driftStatus = sh(script: "curl -s http://localhost:30001/drift/status | grep '\"overall_drift\": true' >/dev/null && echo true || echo false", returnStdout: true).trim()
+                    def driftStatus = sh(script: "curl -s http://localhost:30001/drift/status | grep '\"overall_drift\":true' >/dev/null && echo true || echo false", returnStdout: true).trim()
                     
                     if (driftStatus == 'true') {
                         env.DRIFT_DETECTED = 'true'
