@@ -114,21 +114,36 @@ pipeline {
                     def driftUrl = "http://netsentinel.local/drift/status"
                     echo "Checking for model drift at ${driftUrl}..."
                     
-                    // Use -m 10 to timeout after 10 seconds if no response
-                    def response = sh(script: "curl -s -m 10 ${driftUrl}", returnStdout: true).trim()
-                    
+                    def response = sh(
+                        script: """
+                            curl --fail --silent --show-error \
+                                 --max-time 10 \
+                                 ${driftUrl}
+                        """,
+                        returnStdout: true
+                    ).trim()
+
                     if (!response) {
-                        error "Drift Service at ${driftUrl} is unreachable. Please ensure Minikube is running."
+                        error("Empty response from Drift Service at ${driftUrl}")
                     }
 
                     echo "Response from Drift Service: ${response}"
-                    def json = readJSON text: response
-                    env.DRIFT_DETECTED = json.overall_drift.toString()
 
-                    if (env.DRIFT_DETECTED == 'true') {
-                        echo "DRIFT DETECTED: Feature patterns have changed. Retraining required."
+                    // Use readJSON (requires Pipeline Utility Steps plugin)
+                    def json = readJSON text: response
+
+                    // Validate key existence
+                    if (json.overall_drift == null) {
+                        error("Invalid drift response: overall_drift missing in JSON")
+                    }
+
+                    // Store as string for environment variable
+                    env.DRIFT_DETECTED = json.overall_drift ? "true" : "false"
+
+                    if (json.overall_drift) {
+                        echo "DRIFT DETECTED: Retraining required."
                     } else {
-                        echo "NO DRIFT: Model remains accurate for current traffic."
+                        echo "NO DRIFT: Model stable."
                     }
                 }
             }
