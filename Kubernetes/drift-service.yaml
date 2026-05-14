@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: drift-service
-        image: preet1018/drift-service:{{ drift_tag | default('latest') }}
+        image: preet1018/drift-service:latest
         ports:
         - containerPort: 8001
         env:
