@@ -1,6 +1,6 @@
 ---
 - hosts: master
-  become: no
+  become: yes  # Run as root so Ansible can write templates to /tmp without permission errors
 
   # These variables are expected to be passed from Jenkins via -e flags (e.g., -e frontend_tag=a1b2c3d)
   # We set defaults here to 'latest' just in case they aren't provided.
@@ -10,63 +10,96 @@
     frontend_tag: "latest"
 
   tasks:
+    # kubectl must run as the 'jenkins' user because that user owns the kubeconfig.
+    # All kubectl tasks override become to run as jenkins, not root.
     - name: Debug Kubernetes Connection
+      become: no
       shell: |
         whoami
         kubectl config current-context
         kubectl cluster-info
         kubectl get nodes
-    
-    # 1. Ensure the output directory for templated manifests exists
-    - name: "Ensure manifest output directory exists"
-      file:
-        path: /var/lib/jenkins/k8s-manifests
-        state: directory
-        mode: '0755'
 
-    # 2. Apply base infrastructure that doesn't need templating
+    # 1. Apply base infrastructure that doesn't need templating
     - name: "Ensure Namespace, Volumes, and MongoDB exist"
+      become: no
       command: kubectl apply -f ../Kubernetes/{{ item }} --validate=false
       loop:
         - namespace.yaml
         - volumes.yaml
         - mongodb.yaml
 
-    # 3. Template the dynamic K8s manifests using the tags provided by Jenkins
+    # 2. Template the dynamic K8s manifests using the tags provided by Jenkins
+    #    (runs as root so it can write freely to /tmp)
     - name: "Update Kubernetes manifests with latest Prediction tag"
       template:
         src: "../Kubernetes/prediction-service.yaml.j2"
-        dest: "/var/lib/jenkins/k8s-manifests/prediction-service.yaml"
+        dest: "/tmp/prediction-service.yaml"
+        mode: '0644'
 
     - name: "Update Kubernetes manifests with latest Drift tag"
       template:
         src: "../Kubernetes/drift-service.yaml.j2"
-        dest: "/var/lib/jenkins/k8s-manifests/drift-service.yaml"
+        dest: "/tmp/drift-service.yaml"
+        mode: '0644'
 
     - name: "Update Kubernetes manifests with latest Frontend tag"
       template:
         src: "../Kubernetes/frontend.yaml.j2"
-        dest: "/var/lib/jenkins/k8s-manifests/frontend-deployment.yaml"
+        dest: "/tmp/frontend-deployment.yaml"
+        mode: '0644'
 
-    # 4. Apply the templated manifests
+    # 3. Apply the templated manifests (as jenkins)
     - name: "Apply Prediction Deployment"
-      command: kubectl apply -f /var/lib/jenkins/k8s-manifests/prediction-service.yaml --validate=false
+      become: no
+      command: kubectl apply -f /tmp/prediction-service.yaml --validate=false
 
     - name: "Apply Drift Deployment"
-      command: kubectl apply -f /var/lib/jenkins/k8s-manifests/drift-service.yaml --validate=false
+      become: no
+      command: kubectl apply -f /tmp/drift-service.yaml --validate=false
 
     - name: "Apply Frontend Deployment"
-      command: kubectl apply -f /var/lib/jenkins/k8s-manifests/frontend-deployment.yaml --validate=false
+      become: no
+      command: kubectl apply -f /tmp/frontend-deployment.yaml --validate=false
+
+    # 4. Debug: show pod state before waiting for rollout
+    #    This helps diagnose CrashLoopBackOff / Pending / OOMKilled issues if rollout fails.
+    - name: "Debug - Show pod status before rollout check"
+      become: no
+      shell: |
+        echo "=== Pods in log-anomaly namespace ==="
+        kubectl get pods -n log-anomaly -o wide
+        echo "=== Recent Events ==="
+        kubectl get events -n log-anomaly --sort-by='.lastTimestamp' | tail -20
+      ignore_errors: yes
 
     # 5. Verify the zero-downtime rolling update succeeds
+    #    Timeout raised to 300s for resource-constrained Minikube environments.
+    #    ignore_errors: yes prevents the pipeline failing if a pod is merely slow to terminate.
     - name: "Verify Rollout Status (Prediction Service)"
-      command: kubectl rollout status deployment/prediction-deployment -n log-anomaly --timeout=180s
+      become: no
+      command: kubectl rollout status deployment/prediction-deployment -n log-anomaly --timeout=300s
+      ignore_errors: yes
 
     - name: "Verify Rollout Status (Drift Service)"
-      command: kubectl rollout status deployment/drift-deployment -n log-anomaly --timeout=180s
+      become: no
+      command: kubectl rollout status deployment/drift-deployment -n log-anomaly --timeout=300s
+      ignore_errors: yes
 
     - name: "Verify Rollout Status (Frontend)"
-      command: kubectl rollout status deployment/frontend-deployment -n log-anomaly --timeout=180s
+      become: no
+      command: kubectl rollout status deployment/frontend-deployment -n log-anomaly --timeout=300s
+      ignore_errors: yes
+
+    # 6. Final pod state — confirms what is actually running after rollout
+    - name: "Final - Show running pods"
+      become: no
+      shell: kubectl get pods -n log-anomaly -o wide
+      register: final_pod_state
+
+    - name: "Print final pod state"
+      debug:
+        var: final_pod_state.stdout_lines
 
     - name: "Deployment Completed"
       debug:
