@@ -10,6 +10,8 @@ spec:
       - name: ml-pipeline
         image: preet1018/ml-pipeline:{{ ml_pipeline_tag | default('latest') }}
         env:
+        - name: PROJECT_ROOT
+          value: "/app"
         - name: MONGO_URI
           value: "mongodb://admin:admin@mongodb:27017/logs_db?authSource=admin"
         volumeMounts:
