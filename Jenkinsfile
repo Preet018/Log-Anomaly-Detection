@@ -2,8 +2,8 @@ pipeline {
     agent any
     triggers {
         // Check for drift hourly
-        // cron('H * * * *')
-        cron('*/5 * * * *')
+        cron('H * * * *')
+        // cron('*/5 * * * *')
     }
     environment {
         GITHUB_REPO_URL = 'https://github.com/Preet018/Log-Anomaly-Detection.git'
@@ -101,7 +101,7 @@ pipeline {
 
         // STAGE 3: CONTINUOUS TRAINING (CT)
         stage('Check For Drift') {
-            // when { triggeredBy 'TimerTrigger' }
+            when { triggeredBy 'TimerTrigger' }
             steps {
                 script {
                     echo "Waking up to check Drift Service for model drift..."

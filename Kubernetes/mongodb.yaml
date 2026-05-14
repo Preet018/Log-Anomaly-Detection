@@ -32,6 +32,7 @@ spec:
       - name: mongo-data
         persistentVolumeClaim:
           claimName: mongodb-pvc
+
 ---
 apiVersion: v1
 kind: Service

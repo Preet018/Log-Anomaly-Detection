@@ -37,6 +37,7 @@ spec:
       - name: data-storage
         persistentVolumeClaim:
           claimName: data-pvc
+
 ---
 apiVersion: v1
 kind: Service
