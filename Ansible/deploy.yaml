@@ -17,7 +17,14 @@
         kubectl cluster-info
         kubectl get nodes
     
-    # 1. Apply base infrastructure that doesn't need templating
+    # 1. Ensure the output directory for templated manifests exists
+    - name: "Ensure manifest output directory exists"
+      file:
+        path: /var/lib/jenkins/k8s-manifests
+        state: directory
+        mode: '0755'
+
+    # 2. Apply base infrastructure that doesn't need templating
     - name: "Ensure Namespace, Volumes, and MongoDB exist"
       command: kubectl apply -f ../Kubernetes/{{ item }} --validate=false
       loop:
@@ -25,33 +32,33 @@
         - volumes.yaml
         - mongodb.yaml
 
-    # 2. Template the dynamic K8s manifests using the tags provided by Jenkins
+    # 3. Template the dynamic K8s manifests using the tags provided by Jenkins
     - name: "Update Kubernetes manifests with latest Prediction tag"
       template:
         src: "../Kubernetes/prediction-service.yaml.j2"
-        dest: "/tmp/prediction-service.yaml"
+        dest: "/var/lib/jenkins/k8s-manifests/prediction-service.yaml"
 
     - name: "Update Kubernetes manifests with latest Drift tag"
       template:
         src: "../Kubernetes/drift-service.yaml.j2"
-        dest: "/tmp/drift-service.yaml"
+        dest: "/var/lib/jenkins/k8s-manifests/drift-service.yaml"
 
     - name: "Update Kubernetes manifests with latest Frontend tag"
       template:
         src: "../Kubernetes/frontend.yaml.j2"
-        dest: "/tmp/frontend-deployment.yaml"
+        dest: "/var/lib/jenkins/k8s-manifests/frontend-deployment.yaml"
 
-    # 3. Apply the templated manifests
+    # 4. Apply the templated manifests
     - name: "Apply Prediction Deployment"
-      command: kubectl apply -f /tmp/prediction-service.yaml --validate=false
+      command: kubectl apply -f /var/lib/jenkins/k8s-manifests/prediction-service.yaml --validate=false
 
     - name: "Apply Drift Deployment"
-      command: kubectl apply -f /tmp/drift-service.yaml --validate=false
+      command: kubectl apply -f /var/lib/jenkins/k8s-manifests/drift-service.yaml --validate=false
 
     - name: "Apply Frontend Deployment"
-      command: kubectl apply -f /tmp/frontend-deployment.yaml --validate=false
+      command: kubectl apply -f /var/lib/jenkins/k8s-manifests/frontend-deployment.yaml --validate=false
 
-    # 4. Verify the zero-downtime rolling update succeeds
+    # 5. Verify the zero-downtime rolling update succeeds
     - name: "Verify Rollout Status (Prediction Service)"
       command: kubectl rollout status deployment/prediction-deployment -n log-anomaly --timeout=180s
 
