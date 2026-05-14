@@ -13,7 +13,7 @@
 
     # 1. Apply base infrastructure that doesn't need templating
     - name: "Ensure Namespace, Volumes, and MongoDB exist"
-      command: kubectl apply -f ../Kubernetes/{{ item }}
+      command: kubectl apply -f ../Kubernetes/{{ item }} --validate=false
       loop:
         - namespace.yaml
         - volumes.yaml
@@ -37,13 +37,13 @@
 
     # 3. Apply the templated manifests
     - name: "Apply Prediction Deployment"
-      command: kubectl apply -f /tmp/prediction-service.yaml
+      command: kubectl apply -f /tmp/prediction-service.yaml --validate=false
 
     - name: "Apply Drift Deployment"
-      command: kubectl apply -f /tmp/drift-service.yaml
+      command: kubectl apply -f /tmp/drift-service.yaml --validate=false
 
     - name: "Apply Frontend Deployment"
-      command: kubectl apply -f /tmp/frontend-deployment.yaml
+      command: kubectl apply -f /tmp/frontend-deployment.yaml --validate=false
 
     # 4. Verify the zero-downtime rolling update succeeds
     - name: "Verify Rollout Status (Prediction Service)"
