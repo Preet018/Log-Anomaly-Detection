@@ -48,7 +48,7 @@ The automated pipeline performs the following critical stages:
 
 ### 6. Centralized Logging (ELK Stack)
 *   **Elasticsearch & Kibana:** All system logs are indexed for high-speed searching and visualization.
-*   **Fluent Bit:** Acts as a lightweight log processor and forwarder, collecting container logs and shipping them to the ELK stack.
+*   **Fluent Bit:** Acts as a lightweight log processor and forwarder, collecting container logs and shipping them to the EFK stack.
 
 ---
 
