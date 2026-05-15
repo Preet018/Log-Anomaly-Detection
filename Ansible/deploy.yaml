@@ -16,13 +16,17 @@
         mode: '0755'
 
     # 2. Apply base infrastructure that doesn't need templating
-    - name: "Ensure Namespace, Volumes, MongoDB, and Ingress exist"
+    - name: "Ensure Namespace, Volumes, Secrets, MongoDB, and Ingress exist"
       command: kubectl apply -f ../Kubernetes/{{ item }} --validate=false
       loop:
         - namespace.yaml
         - volumes.yaml
+        - mongodb-secret.yaml
         - mongodb.yaml
         - ingress.yaml
+
+    - name: "Apply monitoring stack resources"
+      command: kubectl apply -f ../Kubernetes/logging/ --validate=false
 
     # 3. Template the dynamic K8s manifests using the tags provided by Jenkins
     - name: "Update Kubernetes manifests with latest Prediction tag"
