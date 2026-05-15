@@ -12,8 +12,18 @@ pipeline {
 
         ANSIBLE_INVENTORY = "Ansible/inventory.ini"
         ANSIBLE_PLAYBOOK  = "Ansible/deploy.yaml"
+        KUBECONFIG = "/home/chand/.kube/config"
     }
     stages {
+        stage('Debug Kubernetes') {
+            steps {
+                sh '''
+                    echo "KUBECONFIG=$KUBECONFIG"
+                    whoami
+                    kubectl get nodes
+                '''
+            }
+        }
         // STAGE 1: CONTINUOUS INTEGRATION (CI)
         stage('Linting') {
             when { not { triggeredBy 'TimerTrigger' } }
