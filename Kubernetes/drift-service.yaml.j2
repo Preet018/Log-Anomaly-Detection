@@ -63,10 +63,8 @@ spec:
   selector:
     app: drift-service
   type: ClusterIP
-  #type: NodePort
 
   ports:
     - protocol: TCP
       port: 8001
       targetPort: 8001
-      #nodePort: 30001
