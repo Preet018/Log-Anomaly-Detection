@@ -24,7 +24,7 @@ FEATURE_COLUMNS = [
 # Alias used by the Single Prediction tab
 COLUMNS = FEATURE_COLUMNS
 
-st.set_page_config(page_title="Log Anomaly Detection", layout="wide")
+st.set_page_config(page_title=" Cybersecurity Log Anomaly Detection", layout="wide")
 
 # Custom CSS for more cyberpunk/cybersec colors
 st.markdown("""
@@ -106,7 +106,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='typing-title'>[*] Log Anomaly Detection System</h1>", unsafe_allow_html=True)
+st.markdown("<h1 class='typing-title'>[*] Cybersecurity Log Anomaly Detection System</h1>", unsafe_allow_html=True)
 st.markdown("""
 Welcome to the Drift-Aware MLOps Dashboard for Cybersecurity. 
 Upload your network logs (NSL-KDD format) to detect anomalies in real-time.
