@@ -106,7 +106,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='typing-title'>[*] CyberSecurity Log Anomaly Detection System</h1>", unsafe_allow_html=True)
+st.markdown("<h1 class='typing-title'>[*] Log Anomaly Detection System</h1>", unsafe_allow_html=True)
 st.markdown("""
 Welcome to the Drift-Aware MLOps Dashboard for Cybersecurity. 
 Upload your network logs (NSL-KDD format) to detect anomalies in real-time.
