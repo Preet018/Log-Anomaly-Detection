@@ -24,7 +24,7 @@ FEATURE_COLUMNS = [
 # Alias used by the Single Prediction tab
 COLUMNS = FEATURE_COLUMNS
 
-st.set_page_config(page_title="CyberSecurity Log Anomaly Detection", layout="wide")
+st.set_page_config(page_title="Log Anomaly Detection", layout="wide")
 
 # Custom CSS for more cyberpunk/cybersec colors
 st.markdown("""
