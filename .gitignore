@@ -17,5 +17,6 @@ env/
 data_storage/logs.csv
 
 # Project Docs
-running_guide.md
 docs/
+run.sh
+running_guide.md
