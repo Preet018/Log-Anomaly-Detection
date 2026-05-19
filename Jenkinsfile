@@ -1,8 +1,11 @@
 pipeline {
     agent any
     triggers {
+        // Check for drift monthly on the 1st day at midnight
+        cron('0 0 1 * *')
+
         // Check for drift hourly
-        cron('H * * * *')
+        // cron('H * * * *')
         // cron('*/5 * * * *')
     }
     environment {
